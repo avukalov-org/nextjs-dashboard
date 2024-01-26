@@ -4,24 +4,14 @@ import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
 import { lusitana } from '@/app/ui/fonts';
 import { Suspense } from "react";
 import { CardsSkeleton, LatestInvoicesSkeleton, RevenueChartSkeleton } from "@/app/ui/skeletons";
- 
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: 'Overview'
+}
+
 export default async function Page() {
   
-  // const data = await Promise.all([
-  //   // fetchRevenue(),
-  //   // fetchLatestInvoices(),
-  //   fetchCardData()
-  // ]);
-
-  // const revenue = data[0];
-  // const latestInvoices = data[0];
-  // const {
-  //   numberOfCustomers,
-  //   numberOfInvoices,
-  //   totalPaidInvoices,
-  //   totalPendingInvoices,
-  // } = data[0]
-
   return (
     <main>
       <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
