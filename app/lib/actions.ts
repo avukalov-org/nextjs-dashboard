@@ -1,6 +1,8 @@
 'use server'
 
+import { signIn } from "@/auth";
 import { sql } from "@vercel/postgres";
+import { AuthError } from "next-auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -20,8 +22,6 @@ const FormSchema = z.object({
   date: z.string(),
 });
 
-const CreateInvoice = FormSchema.omit({ id: true, date: true});
-
 // This is temporary until @types/react-dom is updated
 export type State = {
   errors?: {
@@ -31,6 +31,8 @@ export type State = {
   };
   message?: string | null;
 };
+
+const CreateInvoice = FormSchema.omit({ id: true, date: true});
 
 export async function createInvoice(prevState: State, formData: FormData) {
   
@@ -69,7 +71,6 @@ export async function createInvoice(prevState: State, formData: FormData) {
   redirect('/dashboard/invoices');
 }
 
-
 const UpdateInvoice = FormSchema.omit({ id: true, date: true})
 
 export async function updateInvoice(id: string, prevState: State, formData: FormData) {
@@ -104,9 +105,9 @@ export async function updateInvoice(id: string, prevState: State, formData: Form
   redirect('/dashboard/invoices');
 }
 
-
 export async function deleteInvoice(id: string) {
-  throw new Error('Failed to Delete Invoice');
+  // Simulate error debug
+  // throw new Error('Failed to Delete Invoice');
 
   try {
     await sql`DELETE FROM invoices WHERE id = ${id}`;
@@ -114,5 +115,24 @@ export async function deleteInvoice(id: string) {
     return { message: 'Deleted Invoice.' };
   } catch (error) {
     return { message: 'Database Error: Failed to Delete Invoice.' };
+  }
+}
+
+export async function authenticate(
+  prevState: string | undefined,
+  formData: FormData,
+) {
+  try {
+    await signIn('credentials', formData);
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case 'CredentialsSignin':
+          return 'Invalid credentials.';
+        default:
+          return 'Something went wrong.';
+      }
+    }
+    throw error;
   }
 }
