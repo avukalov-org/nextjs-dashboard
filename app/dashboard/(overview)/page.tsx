@@ -5,13 +5,16 @@ import { lusitana } from '@/app/ui/fonts';
 import { Suspense } from "react";
 import { CardsSkeleton, LatestInvoicesSkeleton, RevenueChartSkeleton } from "@/app/ui/skeletons";
 import { Metadata } from "next";
+import { getAccessTokenFromAuth0 } from "@/app/lib/actions";
 
 export const metadata: Metadata = {
   title: 'Overview'
 }
 
 export default async function Page() {
-  
+
+  // await getAccessTokenFromAuth0();
+
   return (
     <main>
       <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
