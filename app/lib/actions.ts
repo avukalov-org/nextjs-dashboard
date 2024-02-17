@@ -1,7 +1,6 @@
 'use server'
 
 import { sql } from "@vercel/postgres";
-import { AuthError } from "next-auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -121,6 +120,5 @@ export async function deleteInvoice(id: string) {
 
 export async function getAccessTokenFromAuth0() {
   const { accessToken } = await getAccessToken();
-  console.log(accessToken);
-
+  return accessToken;
 }

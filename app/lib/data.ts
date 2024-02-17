@@ -10,6 +10,8 @@ import {
 } from './definitions';
 import { formatCurrency } from './utils';
 import { unstable_noStore as noStore } from "next/cache";
+import { gql } from "@apollo/client";
+import { getClient } from "./apolloClient";
 
 export async function fetchRevenue() {
   // Add noStore() here to prevent the response from being cached.
@@ -91,58 +93,105 @@ export async function fetchCardData() {
   }
 }
 
-const ITEMS_PER_PAGE = 6;
+
+
 export async function fetchFilteredInvoices(
-  query: string,
+  search: string,
   currentPage: number,
+  itemsPerPage: number = 6,
+  orderBy: object = { "date": "desc" }
 ) {
   noStore();
-  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+  const query = gql`
+    query fetchFilteredInvoices(
+      $search: String,
+      $limit: Int,
+      $offset: Int,
+  		$orderBy: [invoices_customers_order_by!]
+    ) {
+      invoices_customers(
+        where: {
+          _or: [
+            {name: {_ilike: $search}},
+            {email: {_ilike: $search}},
+            {amount: {_ilike: $search}},
+            {date: {_ilike: $search}},
+            {status: {_ilike: $search}}
+          ]
+        },
+        limit: $limit,
+        offset: $offset,
+        order_by: $orderBy
+      ) {
+        id
+        amount
+        date
+        status
+        name
+        email
+        image_url
+      }
+    }
+  `;
+
+  const offset = (currentPage - 1) * itemsPerPage;
 
   try {
-    const invoices = await sql<InvoicesTable>`
-      SELECT
-        invoices.id,
-        invoices.amount,
-        invoices.date,
-        invoices.status,
-        customers.name,
-        customers.email,
-        customers.image_url
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      WHERE
-        customers.name ILIKE ${`%${query}%`} OR
-        customers.email ILIKE ${`%${query}%`} OR
-        invoices.amount::text ILIKE ${`%${query}%`} OR
-        invoices.date::text ILIKE ${`%${query}%`} OR
-        invoices.status ILIKE ${`%${query}%`}
-      ORDER BY invoices.date DESC
-      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
-    `;
+    const { data } = await getClient()
+      .query({
+        query,
+        variables: {
+          search: `%${search}%`,
+          limit: itemsPerPage,
+          offset,
+          orderBy
+        }
+      });
 
-    return invoices.rows;
+    return data.invoices_customers as InvoicesTable[];
+
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch invoices.');
   }
+
 }
 
-export async function fetchInvoicesPages(query: string) {
-  noStore();
-  try {
-    const count = await sql`SELECT COUNT(*)
-    FROM invoices
-    JOIN customers ON invoices.customer_id = customers.id
-    WHERE
-      customers.name ILIKE ${`%${query}%`} OR
-      customers.email ILIKE ${`%${query}%`} OR
-      invoices.amount::text ILIKE ${`%${query}%`} OR
-      invoices.date::text ILIKE ${`%${query}%`} OR
-      invoices.status ILIKE ${`%${query}%`}
-  `;
+interface InvoicesCustomersAggregate {
+  invoices_customers_aggregate: {
+    __typename: 'invoices_customers_aggregate',
+    aggregate: { __typename: 'invoices_customers_aggregate_fields', count: 17 }
+  }
+}
 
-    const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
+const ITEMS_PER_PAGE = 6;
+export async function fetchInvoicesPages(search: string) {
+  noStore();
+  const query = gql`
+    query fetchInvoicesPages($search: String) {
+      invoices_customers_aggregate(
+        where: {
+          _or: [
+            {name: {_ilike: $search}},
+            {email: {_ilike: $search}},
+            {amount: {_ilike: $search}},
+            {date: {_ilike: $search}},
+            {status: {_ilike: $search}}
+          ]
+        }
+      ){aggregate{count}}
+    }`;
+
+  try {
+    const { data } = await getClient()
+      .query({
+        query,
+        variables: { search: `%${search}%` }
+      });
+
+    const count = (data as InvoicesCustomersAggregate).invoices_customers_aggregate.aggregate.count
+
+    const totalPages = Math.ceil(Number(count) / ITEMS_PER_PAGE);
     return totalPages;
   } catch (error) {
     console.error('Database Error:', error);
