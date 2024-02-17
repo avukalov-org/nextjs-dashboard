@@ -6,12 +6,14 @@ import { ApolloLink } from "@apollo/client";
 
 export const { getClient } = registerApolloClient(() => {
   const httpLink = new HttpLink({
-    uri: "https://safe-sparrow-62.hasura.app/v1/graphql",
+    uri: process.env.HASURA_URL,
   });
 
   const authLink = new ApolloLink((operation: Operation, forward: NextLink) => {
     return new Observable<FetchResult>((observer) => {
       getAccessTokenFromAuth0().then((accessToken) => {
+        console.log(accessToken);
+
         operation.setContext({
           headers: {
             authorization: accessToken ? `Bearer ${accessToken}` : "",

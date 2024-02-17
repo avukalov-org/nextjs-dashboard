@@ -189,7 +189,10 @@ export async function fetchInvoicesPages(search: string) {
         variables: { search: `%${search}%` }
       });
 
-    const count = (data as InvoicesCustomersAggregate).invoices_customers_aggregate.aggregate.count
+    const count = (data as InvoicesCustomersAggregate)
+      .invoices_customers_aggregate
+      .aggregate
+      .count
 
     const totalPages = Math.ceil(Number(count) / ITEMS_PER_PAGE);
     return totalPages;
