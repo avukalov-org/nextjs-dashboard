@@ -1,6 +1,7 @@
 "use client"
 
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
+import { setContext } from "@apollo/client/link/context";
 import { createClient } from "graphql-ws";
 import { getAccessTokenFromAuth0 } from "./actions";
 import { ApolloLink, FetchResult, HttpLink, NextLink, Operation, split } from "@apollo/client";
@@ -34,6 +35,15 @@ const authLink = new ApolloLink((operation: Operation, forward: NextLink) => {
 });
 
 
+const authLink2 = setContext(async () => {
+  const accessToken = await getAccessTokenFromAuth0();
+  return {
+    headers: {
+      authorization: accessToken ? `Bearer ${accessToken}` : ""
+    }
+  };
+})
+
 const wsLink = new GraphQLWsLink(
   createClient({
     url: process.env.NEXT_PUBLIC_HASURA_WS!,
@@ -65,9 +75,9 @@ const splitLink = split(
       new SSRMultipartLink({
         stripDefer: true,
       }),
-      authLink.concat(httpLink),
+      authLink2.concat(httpLink),
     ])
-    : authLink.concat(httpLink),
+    : authLink2.concat(httpLink),
 );
 
 
