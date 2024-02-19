@@ -7,11 +7,12 @@ import {
   LatestInvoiceRaw,
   User,
   Revenue,
+  InvoicesCustomersAggregate,
 } from './definitions';
 import { formatCurrency } from './utils';
 import { unstable_noStore as noStore } from "next/cache";
 import { gql } from "@apollo/client";
-import { getClient } from "./apolloClient";
+import { apolloClientAccessToken, apolloClientAdmin } from "./apolloClient";
 
 export async function fetchRevenue() {
   // Add noStore() here to prevent the response from being cached.
@@ -19,15 +20,7 @@ export async function fetchRevenue() {
   noStore();
 
   try {
-    // Artificially delay a response for demo purposes.
-    // Don't do this in production :)
-
-    // console.log('Fetching revenue data...');
-    // await new Promise((resolve) => setTimeout(resolve, 3000));
-
     const data = await sql<Revenue>`SELECT * FROM revenue`;
-
-    // console.log('Data fetch completed after 3 seconds.');
 
     return data.rows;
   } catch (error) {
@@ -38,15 +31,28 @@ export async function fetchRevenue() {
 
 export async function fetchLatestInvoices() {
   noStore();
-  try {
-    const data = await sql<LatestInvoiceRaw>`
-      SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      ORDER BY invoices.date DESC
-      LIMIT 5`;
+  const query = gql`
+  query fetchLatestInvoices {
+    invoices(
+      limit: 5,
+      order_by: {date: desc}
+    ) {
+      amount
+      id
+      customer {
+        name
+        image_url
+        email
+      }
+    }
+  }`;
 
-    const latestInvoices = data.rows.map((invoice) => ({
+  try {
+    const { data } = await apolloClientAccessToken.getClient().query({ query });
+
+    const invoices: LatestInvoiceRaw[] = data.invoices
+
+    const latestInvoices = invoices.map((invoice) => ({
       ...invoice,
       amount: formatCurrency(invoice.amount),
     }));
@@ -56,6 +62,8 @@ export async function fetchLatestInvoices() {
     throw new Error('Failed to fetch the latest invoices.');
   }
 }
+
+
 
 export async function fetchCardData() {
   noStore();
@@ -137,7 +145,7 @@ export async function fetchFilteredInvoices(
   const offset = (currentPage - 1) * itemsPerPage;
 
   try {
-    const { data } = await getClient()
+    const { data } = await apolloClientAccessToken.getClient()
       .query({
         query,
         variables: {
@@ -157,15 +165,8 @@ export async function fetchFilteredInvoices(
 
 }
 
-interface InvoicesCustomersAggregate {
-  invoices_customers_aggregate: {
-    __typename: 'invoices_customers_aggregate',
-    aggregate: { __typename: 'invoices_customers_aggregate_fields', count: 17 }
-  }
-}
 
-const ITEMS_PER_PAGE = 6;
-export async function fetchInvoicesPages(search: string) {
+export async function fetchInvoicesPages(search: string, itemsPerPage: number = 6) {
   noStore();
   const query = gql`
     query fetchInvoicesPages($search: String) {
@@ -183,7 +184,7 @@ export async function fetchInvoicesPages(search: string) {
     }`;
 
   try {
-    const { data } = await getClient()
+    const { data } = await apolloClientAccessToken.getClient()
       .query({
         query,
         variables: { search: `%${search}%` }
@@ -194,7 +195,7 @@ export async function fetchInvoicesPages(search: string) {
       .aggregate
       .count
 
-    const totalPages = Math.ceil(Number(count) / ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(Number(count) / itemsPerPage);
     return totalPages;
   } catch (error) {
     console.error('Database Error:', error);

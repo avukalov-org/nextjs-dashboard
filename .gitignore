@@ -2,6 +2,7 @@
 
 changelog
 data.old.ts
+queries.sql
 
 # dependencies
 /node_modules
