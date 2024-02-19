@@ -52,14 +52,14 @@ const authLink2 = setContext(async () => {
 export const apolloClientAccessToken = registerApolloClient(() => {
   return new NextSSRApolloClient({
     cache: new NextSSRInMemoryCache(),
-    link: authLink.concat(httpLink),
+    link: authLink2.concat(httpLink),
   });
 });
 
 export const apolloClientAdmin = registerApolloClient(() => {
   return new NextSSRApolloClient({
     cache: new NextSSRInMemoryCache(),
-    link: authLink2.concat(httpLink),
+    link: adminLink.concat(httpLink),
   });
 });
 
