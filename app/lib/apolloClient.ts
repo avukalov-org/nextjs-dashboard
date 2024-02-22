@@ -1,7 +1,7 @@
-import { ApolloNextAppProvider, NextSSRApolloClient, NextSSRInMemoryCache, SSRMultipartLink } from "@apollo/experimental-nextjs-app-support/ssr";
+import { NextSSRApolloClient, NextSSRInMemoryCache } from "@apollo/experimental-nextjs-app-support/ssr";
 import { registerApolloClient } from "@apollo/experimental-nextjs-app-support/rsc";
-import { FetchResult, HttpLink, NextLink, Observable, Operation, split } from "@apollo/client";
-import { getAccessTokenFromAuth0 } from "./actions";
+import { FetchResult, HttpLink, NextLink, Observable, Operation } from "@apollo/client";
+import { getAccessTokenFromAuth0 } from "@/app/lib/actions";
 import { ApolloLink } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 

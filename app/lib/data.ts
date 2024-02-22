@@ -15,14 +15,17 @@ import { gql } from "@apollo/client";
 import { apolloClientAccessToken, apolloClientAdmin } from "./apolloClient";
 
 export async function fetchRevenue() {
-  // Add noStore() here to prevent the response from being cached.
-  // This is equivalent to in fetch(..., {cache: 'no-store'}).
-  noStore();
+  const query = gql`
+    query fetchRevenue {
+      revenue{
+        month
+        revenue
+      }
+    }`;
 
   try {
-    const data = await sql<Revenue>`SELECT * FROM revenue`;
-
-    return data.rows;
+    const { data } = await apolloClientAccessToken.getClient().query({ query });
+    return data.revenue as Revenue[];
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch revenue data.');
@@ -195,19 +198,21 @@ export async function fetchInvoicesPages(search: string, itemsPerPage: number = 
 }
 
 export async function fetchInvoiceById(id: string) {
-  noStore();
-  try {
-    const data = await sql<InvoiceForm>`
-      SELECT
-        invoices.id,
-        invoices.customer_id,
-        invoices.amount,
-        invoices.status
-      FROM invoices
-      WHERE invoices.id = ${id};
-    `;
+  const query = gql`
+    query fetchInvoiceById($id: uuid = "5b215691-8950-4be1-96da-7873a21b9068") {
+      invoices(where: {id: {_eq: $id}}) {
+        id
+        customer_id
+        amount
+        status
+      }
+    }`;
 
-    const invoice = data.rows.map((invoice) => ({
+  try {
+    const { data } = await apolloClientAccessToken.getClient()
+      .query({ query, variables: { id } })
+
+    const invoice: InvoiceForm[] = data.invoices.map((invoice: InvoiceForm) => ({
       ...invoice,
       // Convert amount from cents to dollars
       amount: invoice.amount / 100,
