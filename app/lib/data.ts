@@ -24,7 +24,7 @@ export async function fetchRevenue() {
     }`;
 
   try {
-    const { data } = await getApolloClient().getClient().query({ query });
+    const { data } = await getApolloClient(true).getClient().query({ query });
     return data.revenue as Revenue[];
   } catch (error) {
     console.error('Database Error:', error);
@@ -51,7 +51,7 @@ export async function fetchLatestInvoices() {
   }`;
 
   try {
-    const { data } = await getApolloClient().getClient().query({ query });
+    const { data } = await getApolloClient(true).getClient().query({ query });
 
     const invoices: LatestInvoiceRaw[] = data.invoices
 
@@ -79,7 +79,7 @@ export async function fetchCardData() {
   `;
 
   try {
-    const { data } = await getApolloClient().getClient().query({ query: GetCardDataQuery });
+    const { data } = await getApolloClient(true).getClient().query({ query: GetCardDataQuery });
 
     const numberOfInvoices = Number(data.card_data[0].invoices ?? '0');
     const numberOfCustomers = Number(data.card_data[0].customers ?? '0');
