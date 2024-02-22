@@ -1,36 +1,16 @@
 import { NextSSRApolloClient, NextSSRInMemoryCache } from "@apollo/experimental-nextjs-app-support/ssr";
 import { registerApolloClient } from "@apollo/experimental-nextjs-app-support/rsc";
-import { FetchResult, HttpLink, NextLink, Observable, Operation } from "@apollo/client";
+import { HttpLink, NextLink, Operation } from "@apollo/client";
 import { getAccessTokenFromAuth0 } from "@/app/lib/actions";
 import { ApolloLink } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 
+// Base Hasura httpLink
 const httpLink = new HttpLink({
   uri: process.env.HASURA_URL,
 });
 
-const authLink = new ApolloLink((operation: Operation, forward: NextLink) => {
-  return new Observable<FetchResult>((observer) => {
-    getAccessTokenFromAuth0().then((accessToken) => {
-      operation.setContext({
-        headers: {
-          authorization: accessToken ? `Bearer ${accessToken}` : "",
-        },
-      });
-
-      const subscription = forward(operation).subscribe({
-        next: observer.next.bind(observer),
-        error: observer.error.bind(observer),
-        complete: observer.complete.bind(observer),
-      });
-
-      return () => {
-        if (subscription) subscription.unsubscribe();
-      };
-    });
-  });
-});
-
+// apollo link with hasura admin secret header
 const adminLink = new ApolloLink((operation: Operation, forward: NextLink) => {
   operation.setContext({
     headers: {
@@ -40,19 +20,28 @@ const adminLink = new ApolloLink((operation: Operation, forward: NextLink) => {
   return forward(operation);
 })
 
-const authLink2 = setContext(async () => {
+// apollo link with authentication header
+const authLink = setContext(async () => {
   const accessToken = await getAccessTokenFromAuth0();
-  return {
-    headers: {
-      authorization: accessToken ? `Bearer ${accessToken}` : ""
-    }
-  };
+  return accessToken ?
+    {
+      headers: {
+        authorization: `Bearer ${accessToken}`
+      }
+    } : {}
 })
 
-export const apolloClientAccessToken = registerApolloClient(() => {
+export function getApolloClient(admin: boolean = false) {
+  if (admin)
+    return apolloClientAdmin;
+
+  return apolloClientAccessToken;
+}
+
+const apolloClientAccessToken = registerApolloClient(() => {
   return new NextSSRApolloClient({
     cache: new NextSSRInMemoryCache(),
-    link: authLink2.concat(httpLink),
+    link: authLink.concat(httpLink),
   });
 });
 

@@ -12,7 +12,7 @@ import {
 import { formatCurrency } from './utils';
 import { unstable_noStore as noStore } from "next/cache";
 import { gql } from "@apollo/client";
-import { apolloClientAccessToken, apolloClientAdmin } from "./apolloClient";
+import { getApolloClient } from "./apolloClient";
 
 export async function fetchRevenue() {
   const query = gql`
@@ -24,7 +24,7 @@ export async function fetchRevenue() {
     }`;
 
   try {
-    const { data } = await apolloClientAccessToken.getClient().query({ query });
+    const { data } = await getApolloClient().getClient().query({ query });
     return data.revenue as Revenue[];
   } catch (error) {
     console.error('Database Error:', error);
@@ -51,7 +51,7 @@ export async function fetchLatestInvoices() {
   }`;
 
   try {
-    const { data } = await apolloClientAccessToken.getClient().query({ query });
+    const { data } = await getApolloClient().getClient().query({ query });
 
     const invoices: LatestInvoiceRaw[] = data.invoices
 
@@ -79,7 +79,7 @@ export async function fetchCardData() {
   `;
 
   try {
-    const { data } = await apolloClientAccessToken.getClient().query({ query: GetCardDataQuery });
+    const { data } = await getApolloClient().getClient().query({ query: GetCardDataQuery });
 
     const numberOfInvoices = Number(data.card_data[0].invoices ?? '0');
     const numberOfCustomers = Number(data.card_data[0].customers ?? '0');
@@ -140,7 +140,7 @@ export async function fetchFilteredInvoices(
   const offset = (currentPage - 1) * itemsPerPage;
 
   try {
-    const { data } = await apolloClientAccessToken.getClient()
+    const { data } = await getApolloClient().getClient()
       .query({
         query,
         variables: {
@@ -178,7 +178,7 @@ export async function fetchInvoicesPages(search: string, itemsPerPage: number = 
     }`;
 
   try {
-    const { data } = await apolloClientAccessToken.getClient()
+    const { data } = await getApolloClient().getClient()
       .query({
         query,
         variables: { search: `%${search}%` }
@@ -209,7 +209,7 @@ export async function fetchInvoiceById(id: string) {
     }`;
 
   try {
-    const { data } = await apolloClientAccessToken.getClient()
+    const { data } = await getApolloClient().getClient()
       .query({ query, variables: { id } })
 
     const invoice: InvoiceForm[] = data.invoices.map((invoice: InvoiceForm) => ({
