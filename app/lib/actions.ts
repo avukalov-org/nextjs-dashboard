@@ -1,10 +1,11 @@
 'use server'
 
-import { sql } from "@vercel/postgres";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getAccessToken } from "@auth0/nextjs-auth0";
+import { gql } from "@apollo/client";
+import { getApolloClient } from "./apolloClient";
 
 
 const FormSchema = z.object({
@@ -57,11 +58,28 @@ export async function createInvoice(prevState: State, formData: FormData) {
   const amountInCents = amount * 100;
   const date = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
 
+  const mutation = gql`
+    mutation CreateInvoice(
+      $customerId: uuid,
+      $amountInCents: Int,
+      $status: String,
+      $date: date
+    ) {
+      insert_invoices_one(
+        object: {
+          customer_id: $customerId,
+          amount: $amountInCents,
+          status: $status,
+          date: $date
+        }) {id}
+    }`;
+
   try {
-    await sql`
-      INSERT INTO invoices (customer_id, amount, status, date)
-      VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
-    `;
+    const { data } = await getApolloClient().getClient()
+      .mutate({
+        mutation,
+        variables: { customerId, amountInCents, status, date }
+      });
   } catch (error) {
     return { message: 'Database Error: Failed to Create Invoice.', };
   }
@@ -90,12 +108,30 @@ export async function updateInvoice(id: string, prevState: State, formData: Form
   const { customerId, amount, status } = validatedFields.data
   const amountInCents = amount * 100;
 
+  const mutation = gql`
+    mutation UpdateInvoice(
+      $id: uuid,
+      $customerId: uuid,
+      $amountInCents: Int,
+      $status: String
+    ) {
+      update_invoices(
+        where: {id: {_eq: $id}}, 
+        _set: {
+          customer_id: $customerId,
+          amount: $amountInCents,
+          status: $status
+        }) {
+        affected_rows
+      }
+    }
+  `;
   try {
-    await sql`
-      UPDATE invoices
-      SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
-      WHERE id = ${id}
-    `;
+    const { data } = await getApolloClient().getClient()
+      .mutate({
+        mutation,
+        variables: { id, customerId, amountInCents, status }
+      });
   } catch (error) {
     return { message: 'Database Error: Failed to Update Invoice.' };
   }
@@ -107,9 +143,19 @@ export async function updateInvoice(id: string, prevState: State, formData: Form
 export async function deleteInvoice(id: string) {
   // Simulate error debug
   // throw new Error('Failed to Delete Invoice');
+  const mutation = gql`
+    mutation DeleteInvoice(
+      $id: uuid
+    ) {
+      delete_invoices(
+        where: {id: {_eq: $id}}
+      ){affected_rows}
+    }`;
 
   try {
-    await sql`DELETE FROM invoices WHERE id = ${id}`;
+    const { data } = await getApolloClient().getClient()
+      .mutate({ mutation, variables: { id } });
+
     revalidatePath('/dashboard/invoices');
     return { message: 'Deleted Invoice.' };
   } catch (error) {

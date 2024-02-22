@@ -15,7 +15,7 @@ import { useFormState } from "react-dom";
 export default function Form({ customers }: { customers: CustomerField[] }) {
   const initialState = { message: null, errors: {} };
   const [state, dispatch] = useFormState(createInvoice, initialState)
-  
+
   return (
     <form action={dispatch}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
@@ -138,7 +138,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
               </p>
             }
           </div>
-            
+
         </fieldset>
       </div>
       <div className="mt-6 flex justify-end gap-4">
