@@ -45,7 +45,7 @@ const apolloClientAccessToken = registerApolloClient(() => {
   });
 });
 
-export const apolloClientAdmin = registerApolloClient(() => {
+const apolloClientAdmin = registerApolloClient(() => {
   return new NextSSRApolloClient({
     cache: new NextSSRInMemoryCache(),
     link: adminLink.concat(httpLink),

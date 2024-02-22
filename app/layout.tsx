@@ -4,8 +4,6 @@ import { Metadata } from "next";
 import { UserProvider } from "@auth0/nextjs-auth0/client";
 import { ApolloWrapper } from "./ui/ApolloWrapper";
 
-export const dynamic = 'force-dynamic'
-
 export const metadata: Metadata = {
   title: {
     template: '%s | Acme Dashboard',
