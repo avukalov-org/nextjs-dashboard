@@ -49,7 +49,12 @@ const wsLink = new GraphQLWsLink(
     url: process.env.NEXT_PUBLIC_HASURA_WS!,
     connectionParams: async () => {
       const accessToken = await getAccessTokenFromAuth0();
-      if (!accessToken) return {}
+      if (!accessToken)
+        return {
+          headers: {
+            "x-hasura-role": "anonymous",
+          }
+        }
 
       return {
         headers: {
