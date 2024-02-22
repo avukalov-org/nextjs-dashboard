@@ -15,6 +15,7 @@ import { gql } from "@apollo/client";
 import { getApolloClient } from "./apolloClient";
 
 export async function fetchRevenue() {
+  noStore();
   const query = gql`
     query fetchRevenue {
       revenue{
