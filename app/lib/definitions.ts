@@ -53,7 +53,7 @@ export type InvoicesCustomersAggregate = {
 export type InvoicesTable = {
   id: string;
   customer_id: string;
-  name: string;
+  customer: string;
   email: string;
   image_url: string;
   date: string;
@@ -92,3 +92,8 @@ export type InvoiceForm = {
   amount: number;
   status: 'pending' | 'paid';
 };
+
+
+export interface OrderBy {
+  [key: string]: string;
+}

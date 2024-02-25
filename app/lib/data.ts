@@ -102,10 +102,11 @@ export async function fetchCardData() {
 export async function fetchFilteredInvoices(
   search: string,
   currentPage: number,
+  orderBy: object = { "date": "desc" },
   itemsPerPage: number = 6,
-  orderBy: object = { "date": "desc" }
 ) {
   noStore();
+
   const query = gql`
     query fetchFilteredInvoices(
       $search: String,
@@ -116,9 +117,8 @@ export async function fetchFilteredInvoices(
       invoices_customers(
         where: {
           _or: [
-            {name: {_ilike: $search}},
+            {customer: {_ilike: $search}},
             {email: {_ilike: $search}},
-            {amount: {_ilike: $search}},
             {date: {_ilike: $search}},
             {status: {_ilike: $search}}
           ]
@@ -131,7 +131,7 @@ export async function fetchFilteredInvoices(
         amount
         date
         status
-        name
+        customer
         email
         image_url
       }
@@ -168,9 +168,8 @@ export async function fetchInvoicesPages(search: string, itemsPerPage: number = 
       invoices_customers_aggregate(
         where: {
           _or: [
-            {name: {_ilike: $search}},
+            {customer: {_ilike: $search}},
             {email: {_ilike: $search}},
-            {amount: {_ilike: $search}},
             {date: {_ilike: $search}},
             {status: {_ilike: $search}}
           ]

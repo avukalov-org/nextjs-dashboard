@@ -2,7 +2,7 @@ import '@/app/ui/global.css';
 import { inter } from "./ui/fonts";
 import { Metadata } from "next";
 import { UserProvider } from "@auth0/nextjs-auth0/client";
-import { ApolloWrapper } from "./ui/ApolloWrapper";
+import { ApolloWrapper } from "./ui/apollo-wrapper";
 
 export const metadata: Metadata = {
   title: {
@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="overflow-hidden">
       <body className={`${inter.className} antialiased`}>
         <UserProvider>
           <ApolloWrapper>

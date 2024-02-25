@@ -23,6 +23,8 @@ const adminLink = new ApolloLink((operation: Operation, forward: NextLink) => {
 // apollo link with authentication header
 const authLink = setContext(async () => {
   const accessToken = await getAccessTokenFromAuth0();
+  // TODO: Remove this later
+  // console.log(accessToken);
   return accessToken ?
     {
       headers: {

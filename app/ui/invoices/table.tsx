@@ -3,17 +3,20 @@ import { UpdateInvoice, DeleteInvoice } from '@/app/ui/invoices/buttons';
 import InvoiceStatus from '@/app/ui/invoices/status';
 import { formatDateToLocal, formatCurrency } from '@/app/lib/utils';
 import { fetchFilteredInvoices } from '@/app/lib/data';
+import { InvoicesTable, OrderBy } from "@/app/lib/definitions";
+import { OrderByHeader } from "../table-order-header";
+
 
 export default async function InvoicesTable({
   query,
+  orderBy,
   currentPage,
 }: {
   query: string;
+  orderBy: OrderBy;
   currentPage: number;
 }) {
-  // const invoices = await fetchFilteredInvoices(query, currentPage);
-  const invoices = await fetchFilteredInvoices(query, currentPage);
-
+  const invoices = await fetchFilteredInvoices(query, currentPage, orderBy);
 
   return (
     <div className="mt-6 flow-root">
@@ -33,9 +36,9 @@ export default async function InvoicesTable({
                         className="mr-2 rounded-full"
                         width={28}
                         height={28}
-                        alt={`${invoice.name}'s profile picture`}
+                        alt={`${invoice.customer}'s profile picture`}
                       />
-                      <p>{invoice.name}</p>
+                      <p>{invoice.customer}</p>
                     </div>
                     <p className="text-sm text-gray-500">{invoice.email}</p>
                   </div>
@@ -60,19 +63,19 @@ export default async function InvoicesTable({
             <thead className="rounded-lg text-left text-sm font-normal">
               <tr>
                 <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
-                  Customer
+                  <OrderByHeader title="customer" orderBy={orderBy} />
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
-                  Email
+                  <OrderByHeader title="email" orderBy={orderBy} />
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
-                  Amount
+                  <OrderByHeader title="amount" orderBy={orderBy} />
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
-                  Date
+                  <OrderByHeader title="date" orderBy={orderBy} />
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
-                  Status
+                  <OrderByHeader title="status" orderBy={orderBy} />
                 </th>
                 <th scope="col" className="relative py-3 pl-6 pr-3">
                   <span className="sr-only">Edit</span>
@@ -92,9 +95,9 @@ export default async function InvoicesTable({
                         className="rounded-full"
                         width={28}
                         height={28}
-                        alt={`${invoice.name}'s profile picture`}
+                        alt={`${invoice.customer}'s profile picture`}
                       />
-                      <p>{invoice.name}</p>
+                      <p>{invoice.customer}</p>
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
