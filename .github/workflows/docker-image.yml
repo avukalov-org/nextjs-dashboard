@@ -24,7 +24,7 @@ jobs:
 
       - name: Push the Docker image
         run: |
-          docker push ghcr.io/${{ github.repository }}/next-dashboard:$(date +%s)
+          docker push avukalov/next-dashboard:$(date +%s)
 
       # - name: Build the Docker image
       #   run: |
