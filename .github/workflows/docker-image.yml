@@ -19,9 +19,9 @@ jobs:
           docker build . \
             --file Dockerfile \
             --tag avukalov/next-dashboard:latest
-            --build-arg NEXT_PUBLIC_HASURA_WS=${{ secrets.NEXT_PUBLIC_HASURA_WS }} \
-            --build-arg HASURA_URL=${{ secrets.HASURA_URL }} \
-            --build-arg HASURA_SECRET=${{ secrets.HASURA_SECRET }} \
+            --build-arg NEXT_PUBLIC_HASURA_WS_ARG=${{ secrets.NEXT_PUBLIC_HASURA_WS }} \
+            --build-arg HASURA_URL_ARG=${{ secrets.HASURA_URL }} \
+            --build-arg HASURA_SECRET_ARG=${{ secrets.HASURA_SECRET }} \
 
       - name: Push the Docker image
         run: |
