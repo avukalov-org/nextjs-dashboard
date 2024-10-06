@@ -20,7 +20,7 @@ jobs:
         run: |
           docker build . \
             --file Dockerfile \
-            --tag ghcr.io/${{ github.repository }}/next-dashboard:$(date +%s)
+            --tag avukalov/next-dashboard:$(date +%s)
 
       - name: Push the Docker image
         run: |
