@@ -20,11 +20,11 @@ jobs:
         run: |
           docker build . \
             --file Dockerfile \
-            --tag avukalov/next-dashboard:$(date +%s)
+            --tag avukalov/next-dashboard:latest
 
       - name: Push the Docker image
         run: |
-          docker push avukalov/next-dashboard:$(date +%s)
+          docker push avukalov/next-dashboard:latest
 
       # - name: Build the Docker image
       #   run: |
