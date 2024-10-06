@@ -3,6 +3,7 @@ node_modules
 Dockerfile
 .git
 .next
+
 .env
-.env.local
+
 .env.example
