@@ -12,11 +12,25 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Build the Docker image
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USER }}" --password-stdin
+
+      - name: Build and tag the Docker image
         run: |
           docker build . \
             --file Dockerfile \
-            --tag next-dashboard:$(date +%s)
+            --tag ghcr.io/${{ github.repository }}/next-dashboard:$(date +%s)
+
+      - name: Push the Docker image
+        run: |
+          docker push ghcr.io/${{ github.repository }}/next-dashboard:$(date +%s)
+
+      # - name: Build the Docker image
+      #   run: |
+      #     docker build . \
+      #       --file Dockerfile \
+      #       --tag next-dashboard:$(date +%s)
 
   # config:
   #   runs-on: ubuntu-latest
