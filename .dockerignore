@@ -1,9 +1,11 @@
 node_modules
 .dockerignore
 Dockerfile
+docker-compose.local.yml
+docker-compose.yml
 .git
 .next
 
 .env
-
+.env.local
 .env.example

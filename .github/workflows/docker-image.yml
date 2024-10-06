@@ -3,8 +3,6 @@ name: Docker Image CI
 on:
   push:
     branches: ['develop']
-  pull_request:
-    branches: ['develop']
 
 jobs:
   build:
@@ -21,6 +19,9 @@ jobs:
           docker build . \
             --file Dockerfile \
             --tag avukalov/next-dashboard:latest
+            --build-arg NEXT_PUBLIC_HASURA_WS=${{ secrets.NEXT_PUBLIC_HASURA_WS }} \
+            --build-arg HASURA_URL=${{ secrets.HASURA_URL }} \
+            --build-arg HASURA_SECRET=${{ secrets.HASURA_SECRET }} \
 
       - name: Push the Docker image
         run: |
@@ -49,9 +50,9 @@ jobs:
   #       echo 'AUTH0_CLIENT_SECRET=${{ secrets.AUTH0_CLIENT_SECRET }}' >> .env.local
   #       echo 'POSTGRES_URL=${{ secrets.POSTGRES_URL }}' >> .env.local
 
-# --build-arg NEXT_PUBLIC_HASURA_WS=${{ secrets.NEXT_PUBLIC_HASURA_WS }} \
-#             --build-arg HASURA_SECRET=${{ secrets.HASURA_SECRET }} \
+#             --build-arg NEXT_PUBLIC_HASURA_WS=${{ secrets.NEXT_PUBLIC_HASURA_WS }} \
 #             --build-arg HASURA_URL=${{ secrets.HASURA_URL }} \
+#             --build-arg HASURA_SECRET=${{ secrets.HASURA_SECRET }} \
 #             --build-arg AUTH0_AUDIENCE=${{ secrets.AUTH0_AUDIENCE }} \
 #             --build-arg AUTH0_BASE_URL=${{ secrets.AUTH0_BASE_URL }} \
 #             --build-arg AUTH0_SECRET=${{ secrets.AUTH0_SECRET }} \
