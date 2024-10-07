@@ -9,15 +9,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout the code from the repository
       - uses: actions/checkout@v4
+
+      # Set up QEMU for multi-platform builds
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      # Set up Docker Buildx for cross-platform builds
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USER }}" --password-stdin
 
       - name: Build and tag the Docker image
         run: |
-          docker build . \
+          docker buildx build . \
             --file Dockerfile \
+            --platform linux/amd64,linux/arm64 \
             --tag avukalov/next-dashboard:latest \
             --build-arg NEXT_PUBLIC_HASURA_WS_ARG=${{ secrets.NEXT_PUBLIC_HASURA_WS }} \
             --build-arg HASURA_URL_ARG=${{ secrets.HASURA_URL }} \
@@ -26,37 +36,3 @@ jobs:
       - name: Push the Docker image
         run: |
           docker push avukalov/next-dashboard:latest
-
-      # - name: Build the Docker image
-      #   run: |
-      #     docker build . \
-      #       --file Dockerfile \
-      #       --tag next-dashboard:$(date +%s)
-
-  # config:
-  #   runs-on: ubuntu-latest
-
-  # steps:
-  #   - name: Echo secrets
-  #     run: |
-  #       echo 'NEXT_PUBLIC_HASURA_WS=${{ secrets.NEXT_PUBLIC_HASURA_WS }}' >> .env.local
-  #       echo 'HASURA_SECRET=${{ secrets.HASURA_SECRET }}' >> .env.local
-  #       echo 'HASURA_URL=${{ secrets.HASURA_URL }}' >> .env.local
-  #       echo 'AUTH0_AUDIENCE=${{ secrets.AUTH0_AUDIENCE }}' >> .env.local
-  #       echo 'AUTH0_BASE_URL=${{ secrets.AUTH0_BASE_URL }}' >> .env.local
-  #       echo 'AUTH0_SECRET=${{ secrets.AUTH0_SECRET }}' >> .env.local
-  #       echo 'AUTH0_ISSUER_BASE_URL=${{ secrets.AUTH0_ISSUER_BASE_URL }}' >> .env.local
-  #       echo 'AUTH0_CLIENT_ID=${{ secrets.AUTH0_CLIENT_ID }}' >> .env.local
-  #       echo 'AUTH0_CLIENT_SECRET=${{ secrets.AUTH0_CLIENT_SECRET }}' >> .env.local
-  #       echo 'POSTGRES_URL=${{ secrets.POSTGRES_URL }}' >> .env.local
-
-#             --build-arg NEXT_PUBLIC_HASURA_WS=${{ secrets.NEXT_PUBLIC_HASURA_WS }} \
-#             --build-arg HASURA_URL=${{ secrets.HASURA_URL }} \
-#             --build-arg HASURA_SECRET=${{ secrets.HASURA_SECRET }} \
-#             --build-arg AUTH0_AUDIENCE=${{ secrets.AUTH0_AUDIENCE }} \
-#             --build-arg AUTH0_BASE_URL=${{ secrets.AUTH0_BASE_URL }} \
-#             --build-arg AUTH0_SECRET=${{ secrets.AUTH0_SECRET }} \
-#             --build-arg AUTH0_ISSUER_BASE_URL=${{ secrets.AUTH0_ISSUER_BASE_URL }} \
-#             --build-arg AUTH0_CLIENT_ID=${{ secrets.AUTH0_CLIENT_ID }} \
-#             --build-arg AUTH0_CLIENT_SECRET=${{ secrets.AUTH0_CLIENT_SECRET }} \
-#             --build-arg POSTGRES_URL=${{ secrets.POSTGRES_URL }}
