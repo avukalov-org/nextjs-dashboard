@@ -6,19 +6,11 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, arm64]
 
     steps:
       # Checkout the code from the repository
       - uses: actions/checkout@v4
-
-      # Set up QEMU for multi-platform builds
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
-      # Set up Docker Buildx for cross-platform builds
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
 
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USER }}" --password-stdin
@@ -27,7 +19,6 @@ jobs:
         run: |
           docker buildx build . \
             --file Dockerfile \
-            --platform linux/amd64,linux/arm64 \
             --tag avukalov/next-dashboard:latest \
             --build-arg NEXT_PUBLIC_HASURA_WS_ARG=${{ secrets.NEXT_PUBLIC_HASURA_WS }} \
             --build-arg HASURA_URL_ARG=${{ secrets.HASURA_URL }} \
